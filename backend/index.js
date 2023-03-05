@@ -12,7 +12,7 @@ const server = app.listen(8000, () => {
 
 //event trigger
 app.post('/blog_post_event', async (req, res) => {
-    console.log("Received Event from blog post", req.body.event.op);
+    console.log("Received Event from blog post", req.body.event.data.new);
     let type
 
     switch (req.body.event.op) {
@@ -45,6 +45,7 @@ app.post('/blog_post_event', async (req, res) => {
 
 //Actions
 app.post('/archive_posts', async (req, res) => {
+    console.log("Received request to archive posts using actions", req.body.input)
     try {
         const { age_in_second } = req.body.input;
         const sequelize = new Sequelize(POSTGRES_URI, {});
