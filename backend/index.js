@@ -15,23 +15,23 @@ app.post('/blog_post_event', async (req, res) => {
     console.log("Received Event from blog post", req.body.event.op);
     let type
 
-    switch (req.body.event.op){
+    switch (req.body.event.op) {
         case 'INSERT':
             type = "created";
             break;
         case 'UPDATE':
-            if(req.body.event.data.old.is_published && !req.body.event.data.new.is_published){
+            if (req.body.event.data.old.is_published && !req.body.event.data.new.is_published) {
                 type = "unpublished";
-            }else if(!req.body.event.data.old.is_published && req.body.event.data.new.is_published){
+            } else if (!req.body.event.data.old.is_published && req.body.event.data.new.is_published) {
                 type = "published";
-            }            
+            }
             break;
         case 'DELETE':
             type = "deleted";
             break;
     }
 
-    if(type){
+    if (type) {
         const sequelize = new Sequelize(POSTGRES_URI, {});
         const blogPostId = req.body.event.data.new.id;
 
@@ -39,8 +39,23 @@ app.post('/blog_post_event', async (req, res) => {
     }
 
     res.send({});
-       
-    
+
+
 });
 
+//Actions
+app.post('/archive_posts', async (req, res) => {
+    try {
+        const { age_in_second } = req.body.input;
+        const sequelize = new Sequelize(POSTGRES_URI, {});
+        const [result, metadata] = await sequelize.query(`UPDATE blog_post SET is_published = false WHERE date < NOW() - INTERVAL '${age_in_second} seconds'`);
 
+        return res.status(200).json({
+            count: metadata.rowCount
+        })
+    } catch (e) {
+        return res.status(400).json({
+            message: e.message
+        })
+    }
+});
